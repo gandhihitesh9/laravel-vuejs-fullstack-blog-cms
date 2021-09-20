@@ -41,13 +41,21 @@ class TagController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {
+    {   
         $this->validate($request, [
             "tagName" => 'required'
         ]);
-        return $create = Tag::where("id", $request->id)->update([
+        $updated = Tag::where("id", $request->id)->update([
             "tagName" => $request->tagName
         ]);
+        if($updated){
+            return Tag::where("id", $request->id)->get();
+        }else{
+            return response()->json([
+                "message" => "Something went wrong"
+            ], 422);
+        }
+        
     }
 
     /**
@@ -90,8 +98,17 @@ class TagController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Request $request)
     {
-        //
+        $deleted = Tag::where("id", $request->id)->delete();
+        if($deleted){
+            return response()->json([
+                "message" => "Tag has been deleted"
+            ], 200);
+        }else{
+            return response()->json([
+                "message" => "Something went wrong"
+            ], 422);
+        }
     }
 }

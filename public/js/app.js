@@ -2262,6 +2262,21 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   data: function data() {
     return {
@@ -2274,7 +2289,12 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       tags: [],
       editData: {
         tagName: ''
-      }
+      },
+      editIndex: -1,
+      showDeleteModel: false,
+      isDeleing: false,
+      deletingIndex: -1,
+      deleteItem: {}
     };
   },
   methods: {
@@ -2349,7 +2369,9 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               case 4:
                 editTagRes = _context2.sent;
 
-                if (editTagRes.status === 201) {
+                if (editTagRes.status === 200) {
+                  _this2.tags[_this2.editIndex].tagName = editTagRes.data[0].tagName;
+
                   _this2.s("Success!", "Tag name has been edited");
 
                   _this2.editModel = false;
@@ -2372,36 +2394,92 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         }, _callee2);
       }))();
     },
-    showEditModel: function showEditModel(tag) {
-      this.editData = tag;
+    showEditModel: function showEditModel(tag, editIndex) {
+      this.editIndex = editIndex;
+      var tag_obj = {
+        id: tag.id,
+        tagName: tag.tagName
+      }; //this.editData = tag;
+
+      this.editData = tag_obj;
       this.editModel = true;
+    },
+    deleteTag: function deleteTag() {
+      var _this3 = this;
+
+      return _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee3() {
+        var deleteTagRes;
+        return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee3$(_context3) {
+          while (1) {
+            switch (_context3.prev = _context3.next) {
+              case 0:
+                _this3.isDeleing = true; //if(!confirm("Are you sure want to delete this record?")) return
+                //this.$set(tag, 'isDeleting', true);
+
+                _context3.next = 3;
+                return _this3.callApi("post", "app/tag/delete", _this3.deleteItem);
+
+              case 3:
+                deleteTagRes = _context3.sent;
+
+                if (deleteTagRes.status == 200) {
+                  _this3.tags.splice(_this3.deletingIndex, 1);
+
+                  _this3.s("Success!", "Tag has been deleted");
+                } else {
+                  _this3.e("Oops!", editTagRes.msg);
+                }
+
+                _this3.isDeleing = false;
+                _this3.showDeleteModel = false;
+
+              case 7:
+              case "end":
+                return _context3.stop();
+            }
+          }
+        }, _callee3);
+      }))();
+    },
+    showDeletingModel: function showDeletingModel(tag, i) {
+      /* const deleteModalObj = {
+      	showDeleteModel: true,
+      	showDeleteModel: true,
+      	deleteUrl: "app/tag/delete",
+      	data: tag,
+      	deletingIndex: i,
+      	isDeleted : false,
+      };*/
+      this.deleteItem = tag;
+      this.deletingIndex = i;
+      this.showDeleteModel = true;
     }
   },
   created: function created() {
-    var _this3 = this;
+    var _this4 = this;
 
-    return _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee3() {
+    return _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee4() {
       var getTagsRes;
-      return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee3$(_context3) {
+      return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee4$(_context4) {
         while (1) {
-          switch (_context3.prev = _context3.next) {
+          switch (_context4.prev = _context4.next) {
             case 0:
-              _context3.next = 2;
-              return _this3.callApi("get", "app/tag/index");
+              _context4.next = 2;
+              return _this4.callApi("get", "app/tag/index");
 
             case 2:
-              getTagsRes = _context3.sent;
+              getTagsRes = _context4.sent;
 
               if (getTagsRes.status == 200) {
-                _this3.tags = getTagsRes.data;
+                _this4.tags = getTagsRes.data;
               }
 
             case 4:
             case "end":
-              return _context3.stop();
+              return _context4.stop();
           }
         }
-      }, _callee3);
+      }, _callee4);
     }))();
   }
   /* async created(){
@@ -68587,7 +68665,7 @@ var render = function() {
                                 attrs: { type: "button" },
                                 on: {
                                   click: function($event) {
-                                    return _vm.showEditModel(tag)
+                                    return _vm.showEditModel(tag, i)
                                   }
                                 }
                               },
@@ -68598,7 +68676,15 @@ var render = function() {
                               "button",
                               {
                                 staticClass: "_btn _action_btn make_btn1",
-                                attrs: { type: "button" }
+                                attrs: {
+                                  type: "button",
+                                  loading: tag.isDeleting
+                                },
+                                on: {
+                                  click: function($event) {
+                                    return _vm.showDeletingModel(tag, i)
+                                  }
+                                }
                               },
                               [_vm._v("Delete")]
                             )
@@ -68737,6 +68823,62 @@ var render = function() {
                 )
               ],
               1
+            ),
+            _vm._v(" "),
+            _c(
+              "Modal",
+              {
+                attrs: { width: "360" },
+                model: {
+                  value: _vm.showDeleteModel,
+                  callback: function($$v) {
+                    _vm.showDeleteModel = $$v
+                  },
+                  expression: "showDeleteModel"
+                }
+              },
+              [
+                _c(
+                  "p",
+                  {
+                    staticStyle: { color: "#f60", "text-align": "center" },
+                    attrs: { slot: "header" },
+                    slot: "header"
+                  },
+                  [
+                    _c("Icon", { attrs: { type: "ios-information-circle" } }),
+                    _vm._v(" "),
+                    _c("span", [_vm._v("Delete confirmation")])
+                  ],
+                  1
+                ),
+                _vm._v(" "),
+                _c("div", { staticStyle: { "text-align": "center" } }, [
+                  _c("p", [_vm._v("Are you sure want to delete this record?")])
+                ]),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  { attrs: { slot: "footer" }, slot: "footer" },
+                  [
+                    _c(
+                      "Button",
+                      {
+                        attrs: {
+                          type: "error",
+                          size: "large",
+                          long: "",
+                          loading: _vm.isDeleing,
+                          disabled: _vm.isDeleing
+                        },
+                        on: { click: _vm.deleteTag }
+                      },
+                      [_vm._v("Delete")]
+                    )
+                  ],
+                  1
+                )
+              ]
             )
           ],
           1

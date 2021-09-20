@@ -25,8 +25,8 @@
 								<td class="_table_name">{{tag.tagName}}</td>
 								<td>{{tag.created_at}}</td>
 								<td>
-									<button class="_btn _action_btn edit_btn1" type="button" @click="showEditModel(tag)">Edit</button>
-									<button class="_btn _action_btn make_btn1" type="button">Delete</button>
+									<button class="_btn _action_btn edit_btn1" type="button" @click="showEditModel(tag, i)">Edit</button>
+									<button class="_btn _action_btn make_btn1" type="button" @click="showDeletingModel(tag, i)" :loading="tag.isDeleting">Delete</button>
 								</td>
 							</tr>
 								<!-- ITEMS -->
@@ -65,6 +65,21 @@
 						</div>
 					</Modal>
 
+					<!-- delete alert model  -->
+					<Modal v-model="showDeleteModel" width="360">
+						<p slot="header" style="color:#f60;text-align:center">
+							<Icon type="ios-information-circle"></Icon>
+							<span>Delete confirmation</span>
+						</p>
+						<div style="text-align:center">
+							<p>Are you sure want to delete this record?</p>
+							
+						</div>
+						<div slot="footer">
+							<Button type="error" size="large" long :loading="isDeleing" :disabled="isDeleing" @click="deleteTag">Delete</Button>
+						</div>
+					</Modal>
+
 
 				</div>
 				 
@@ -88,6 +103,12 @@ export default {
 			editData: {
 				tagName: '',
 			},
+			editIndex: -1,
+			showDeleteModel: false,
+			isDeleing : false,
+			deletingIndex: -1,
+			deleteItem: {},
+			
 		}
 	},
 	methods: {
@@ -120,7 +141,8 @@ export default {
 			}
 			const editTagRes = await this.callApi("post", 'app/tag/edit/', this.editData);
 			
-			if(editTagRes.status === 201){
+			if(editTagRes.status === 200){
+				this.tags[this.editIndex].tagName = editTagRes.data[0].tagName;
 				this.s("Success!", "Tag name has been edited");
 				this.editModel = false;
 				this.editData.tagName = "";
@@ -136,9 +158,43 @@ export default {
 				
 			}
 		},
-		showEditModel(tag){
-			this.editData = tag;
+		showEditModel(tag, editIndex){
+			this.editIndex = editIndex;
+			let tag_obj = {
+				id: tag.id,
+				tagName: tag.tagName,
+			};
+			//this.editData = tag;
+			this.editData = tag_obj;
 			this.editModel = true;
+		},
+		async deleteTag(){
+			this.isDeleing = true;
+			//if(!confirm("Are you sure want to delete this record?")) return
+			//this.$set(tag, 'isDeleting', true);
+			const deleteTagRes = await this.callApi("post", "app/tag/delete", this.deleteItem);
+			if(deleteTagRes.status == 200){
+				this.tags.splice(this.deletingIndex, 1);
+				this.s("Success!", "Tag has been deleted");
+			}else{
+				this.e("Oops!", editTagRes.msg);	
+			}
+			this.isDeleing = false;
+			this.showDeleteModel = false;
+			
+		},
+		showDeletingModel(tag, i){
+			/* const deleteModalObj = {
+				showDeleteModel: true,
+				showDeleteModel: true,
+				deleteUrl: "app/tag/delete",
+				data: tag,
+				deletingIndex: i,
+				isDeleted : false,
+			};*/
+			this.deleteItem = tag;
+			this.deletingIndex = i;
+			this.showDeleteModel = true;
 		}
 	},
  	async created(){

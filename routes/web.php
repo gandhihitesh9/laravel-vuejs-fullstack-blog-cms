@@ -14,7 +14,8 @@ use Illuminate\Support\Facades\Route;
 */
 Route::post("app/tag/create", "App\Http\Controllers\TagController@create");
 Route::get("app/tag/index", "App\Http\Controllers\TagController@index");
-Route::put("app/tag/edit", "App\Http\Controllers\TagController@index");
+Route::post("app/tag/edit", "App\Http\Controllers\TagController@store");
+Route::post("app/tag/delete", "App\Http\Controllers\TagController@destroy");
 Route::get('/', function () {
     return view('welcome');
 });
